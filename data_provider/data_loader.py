@@ -27,7 +27,7 @@ class Dataset_Custom(Dataset):
         self.set_type = type_map[flag]
 
         self.features = features
-        self.target = target
+        self.target = target if isinstance(target, list) else [target]
         self.scale = scale
         self.timeenc = timeenc
         self.freq = freq
@@ -46,12 +46,13 @@ class Dataset_Custom(Dataset):
             df_raw = pd.get_dummies(df_raw, columns=categorical_columns)
 
         '''
-        df_raw.columns: ['fact_time', ...(other features), target feature]
+        df_raw.columns: ['fact_time', ...(other features), target features]
         '''
         cols = list(df_raw.columns)
-        cols.remove(self.target)
+        for target in self.target:
+            cols.remove(target)
         cols.remove('fact_time')
-        df_raw = df_raw[['fact_time'] + cols + [self.target]]
+        df_raw = df_raw[['fact_time'] + cols + self.target]
         # print(cols)
         num_train = int(len(df_raw) * 0.7)
         num_test = int(len(df_raw) * 0.2)
@@ -66,7 +67,7 @@ class Dataset_Custom(Dataset):
             df_data = df_raw[cols_data]
 
         elif self.features == 'S':
-            df_data = df_raw[[self.target]]
+            df_data = df_raw[self.target]
 
         if self.scale:
             train_data = df_data[border1s[0]:border2s[0]]

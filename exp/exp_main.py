@@ -47,7 +47,7 @@ class Exp_Main(Exp_Basic):
             criterion = nn.MSELoss()
 
         else:
-            criterion = nn.L1Loss()
+            criterion = torch.nn.SmoothL1Loss()
 
         return criterion
 
@@ -55,7 +55,7 @@ class Exp_Main(Exp_Basic):
         total_loss = []
         self.model.eval()
         with torch.no_grad():
-            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(vali_loader):
+            for i, (batch_x, batch_y) in enumerate(vali_loader):
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float()
 
@@ -144,7 +144,7 @@ class Exp_Main(Exp_Basic):
                     f_dim = -1 if self.args.features == 'MS' else 0
                     outputs = outputs[:, -self.args.pred_len:, f_dim:]
                     batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
-                    loss = criterion(outputs, batch_y)
+                    loss = criterion(outputs[:,:,-1*len(train_data.target)], batch_y[:,:,-1*len(train_data.target)])
                     train_loss.append(loss.item())
 
                 if (i + 1) % 100 == 0:
